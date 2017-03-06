@@ -1,6 +1,11 @@
 #include "gurobi_c++.h"
+#include "graph.h"
 #include <sstream>
 using namespace std;
+
+bool readInstance(string filePath) {
+	return true;
+}
 
 int main(int   argc, char *argv[]) {
 	try {
