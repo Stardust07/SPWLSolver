@@ -1,5 +1,5 @@
 #include "gurobi_c++.h"
-#include "graph.h"
+#include "solution.h"
 #include <sstream>
 using namespace std;
 
@@ -8,49 +8,62 @@ bool readInstance(string filePath) {
 }
 
 int main(int   argc, char *argv[]) {
-	try {
-		GRBEnv env = GRBEnv();
-
-		GRBModel model = GRBModel(env);
-
-		// Create variables
-		GRBVar x = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "x");
-		GRBVar y = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "y");
-		GRBVar z = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "z");
-
-		// Set objective: maximize x + y + 2 z
-
-		model.setObjective(x + y + 2 * z, GRB_MINIMIZE);
-
-		// Add constraint: x + 2 y + 3 z <= 4
-
-		model.addConstr(x + 2 * y + 3 * z <= 4, "c0");
-
-		// Add constraint: x + y >= 1
-
-		model.addConstr(x + y >= 1, "c1");
-
-		// Optimize model
-
-		model.optimize();
-
-		cout << x.get(GRB_StringAttr_VarName) << " "
-			<< x.get(GRB_DoubleAttr_X) << endl;
-		cout << y.get(GRB_StringAttr_VarName) << " "
-			<< y.get(GRB_DoubleAttr_X) << endl;
-		cout << z.get(GRB_StringAttr_VarName) << " "
-			<< z.get(GRB_DoubleAttr_X) << endl;
-
-		cout << "Obj: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
+	int v = 5;
+	int e = 6;
+	Graph g(v, e);
+	int edges[][5] = {
+		0, 1, 1, 0, 1,
+		1, 0, 0, 1, 1,
+		1, 0, 0, 0, 1,
+		0, 1, 0, 0, 1,
+		1, 1, 1, 1, 0
+	};
+	int time[][5] = {
+		0, 4, 8, 0, 1,
+		4, 0, 0, 1, 2,
+		8, 0, 0, 0, 2,
+		0, 1, 0, 0, 1,
+		1, 2, 2, 1, 0
+	};
+	int oil[][5] = {
+		0, 1, 5, 0, 6,
+		1, 0, 0, 2, 4,
+		5, 0, 0, 0, 3,
+		0, 2, 0, 0, 7,
+		6, 4, 3, 7, 0
+	};
+	for (int i = 0; i < v; i++)
+	{
+		for (int j = 0; j <= i; j++)
+		{
+			if (i == j) {
+				g.availability[i][j] = g.availability[j][i] = 0;
+			}
+			else {
+				g.availability[i][j] = g.availability[j][i] = edges[i][j];
+				//g.availability[i][j] = g.availability[j][i] = rand() % 2;
+			}
+			g.timeCost[i][j] = g.timeCost[j][i] = time[i][j];
+			g.oilCost[i][j] = g.oilCost[j][i] = oil[i][j];
+			/*g.timeCost[i][j] = g.timeCost[j][i] = rand() % 10;
+			g.oilCost[i][j] = g.oilCost[j][i] = rand() % 10 + 1;*/
+		}
 	}
-	catch (GRBException e) {
-		cout << "Error code = " << e.getErrorCode() << endl;
-		cout << e.getMessage() << endl;
+	for (int i = 0; i < v; i++)
+	{
+		for (int j = 0; j <= i; j++)
+		{
+			if (g.availability[i][j] == 1) {
+				cout << i << " " << j << " time=" << g.timeCost[j][i] << " oil=" << g.oilCost[j][i] << endl;
+			}
+		}
 	}
-	catch (...) {
-		cout << "Exception during optimization" << endl;
-	}
+	cout << endl;
+
+	Solution sln(g, 0, 3);
+	sln.setTimeLimit(10);
+	sln.setMaxDrivingTime(4);
+	sln.solve();
 	char c;
 	cin >> c;
 
