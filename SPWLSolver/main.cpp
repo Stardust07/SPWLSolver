@@ -8,7 +8,7 @@ bool readInstance(string filePath) {
 }
 
 int main(int   argc, char *argv[]) {
-	int v = 5;
+	int v = 10;
 	int e = 6;
 	Graph g(v, e);
 	int edges[][5] = {
@@ -40,13 +40,13 @@ int main(int   argc, char *argv[]) {
 				g.availability[i][j] = g.availability[j][i] = 0;
 			}
 			else {
-				g.availability[i][j] = g.availability[j][i] = edges[i][j];
-				//g.availability[i][j] = g.availability[j][i] = rand() % 2;
+				//g.availability[i][j] = g.availability[j][i] = edges[i][j];
+				g.availability[i][j] = g.availability[j][i] = rand() % 2;
 			}
-			g.timeCost[i][j] = g.timeCost[j][i] = time[i][j];
-			g.oilCost[i][j] = g.oilCost[j][i] = oil[i][j];
-			/*g.timeCost[i][j] = g.timeCost[j][i] = rand() % 10;
-			g.oilCost[i][j] = g.oilCost[j][i] = rand() % 10 + 1;*/
+			//g.timeCost[i][j] = g.timeCost[j][i] = time[i][j];
+			//g.oilCost[i][j] = g.oilCost[j][i] = oil[i][j];
+			g.timeCost[i][j] = g.timeCost[j][i] = rand() % 10 + 1;
+			g.oilCost[i][j] = g.oilCost[j][i] = rand() % 10 + 1;
 		}
 	}
 	for (int i = 0; i < v; i++)
@@ -60,9 +60,10 @@ int main(int   argc, char *argv[]) {
 	}
 	cout << endl;
 
-	Solution sln(g, 0, 3);
-	sln.setTimeLimit(10);
+	Solution sln(g, 0, 9);
+	sln.setTimeLimit(20);
 	sln.setMaxDrivingTime(4);
+	sln.setOffTime(4);
 	sln.solve();
 	char c;
 	cin >> c;

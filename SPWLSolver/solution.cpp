@@ -10,12 +10,16 @@ Solution::~Solution()
 {
 }
 
-void Solution::setTimeLimit(int t) {
+void Solution::setTimeLimit(double t) {
 	timeLimit = t;
 }
 
-void Solution::setMaxDrivingTime(int t) {
+void Solution::setMaxDrivingTime(double t) {
 	maxDrivingTime = t;
+}
+
+void Solution::setOffTime(double t) {
+	offTime = t;
 }
 
 bool Solution::solve() {
@@ -23,6 +27,7 @@ bool Solution::solve() {
 	GRBVar** x = 0;
 	GRBVar* y = 0;
 	GRBVar* t = 0;
+	GRBVar* tm = 0;
 	try {
 		env = new GRBEnv();
 		GRBModel model = GRBModel(*env);
@@ -49,6 +54,7 @@ bool Solution::solve() {
 
 		
 		t = model.addVars(graph.numberOfVectors);
+		tm = model.addVars(graph.numberOfVectors);
 		for (int i = 0; i < graph.numberOfVectors; ++i)
 		{
 			ostringstream vname;
@@ -56,6 +62,10 @@ bool Solution::solve() {
 			t[i].set(GRB_DoubleAttr_UB, maxDrivingTime);
 			t[i].set(GRB_DoubleAttr_Obj, 1);
 			t[i].set(GRB_StringAttr_VarName, vname.str());
+			vname << "a";
+			tm[i].set(GRB_DoubleAttr_UB, maxDrivingTime);
+			tm[i].set(GRB_DoubleAttr_Obj, 1);
+			tm[i].set(GRB_StringAttr_VarName, vname.str());
 		}
 
 		GRBLinExpr objExpr = 0;
@@ -128,12 +138,11 @@ bool Solution::solve() {
 			for (int j = 0; j < graph.numberOfVectors; ++j)
 			{
 				if (graph.availability[i][j] == 1) {
-					expr += (t[j] + graph.timeCost[j][i]) * x[j][i];
+					expr += (tm[j] + graph.timeCost[j][i]) * x[j][i];
 				}	
 			}
 			model.addQConstr(expr, GRB_EQUAL, t[i], cname.str() + "-1");
-			model.addQConstr((1 - y[i]) * t[i], GRB_LESS_EQUAL, maxDrivingTime, cname.str() + "-2");
-			//model.addQConstr(expr, GRB_LESS_EQUAL, maxDrivingTime, cname.str() + "-2");
+			model.addQConstr((1 - y[i]) * t[i], GRB_EQUAL, tm[i], cname.str() + "-2");
 		}
 
 		// Add total time constraint
@@ -147,7 +156,7 @@ bool Solution::solve() {
 				}
 				lhsExpr += x[i][j] * graph.timeCost[i][j];
 			}
-			lhsExpr += y[i] * 2;
+			lhsExpr += y[i] * offTime;
 		}
 		model.addConstr(lhsExpr, GRB_LESS_EQUAL, timeLimit, "TotalTime");
 
@@ -181,12 +190,16 @@ bool Solution::solve() {
 					cout << y[i].get(GRB_StringAttr_VarName) << " ";
 				}
 			}
-			cout << endl;
+			/*cout << endl;
 			for (int i = 0; i < graph.numberOfVectors; i++)
 			{
 				cout << t[i].get(GRB_DoubleAttr_X) << " ";
 			}
-
+			cout << endl;
+			for (int i = 0; i < graph.numberOfVectors; i++)
+			{
+				cout << tm[i].get(GRB_DoubleAttr_X) << " ";
+			}*/
 			return true;
 		}
 		if ((status != GRB_INF_OR_UNBD) && (status != GRB_INFEASIBLE))

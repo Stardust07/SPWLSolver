@@ -7,15 +7,16 @@ class Solution
 public:
 	Graph graph;
 	int start, end;
-	int timeLimit;
-	int maxDrivingTime;
+	double timeLimit;
+	double maxDrivingTime;
+	double offTime;
 public:
 	Solution(Graph g, int s, int e);
 	~Solution();
 	bool solve();
-	void setTimeLimit(int t);
-	void setMaxDrivingTime(int t);
-
+	void setTimeLimit(double t);
+	void setMaxDrivingTime(double t);
+	void setOffTime(double t);
 	GRBQuadExpr generateDrivingTime(int v, GRBVar** x, GRBVar* y);
 };
 
